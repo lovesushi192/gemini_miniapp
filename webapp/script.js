@@ -1,16 +1,9 @@
-// === Инициализация Telegram WebApp ===
 const tg = window.Telegram.WebApp;
 tg.expand();
 
 const chat = document.getElementById("chat");
 const input = document.getElementById("userInput");
 const sendBtn = document.getElementById("sendBtn");
-
-// === Отправка сообщения ===
-sendBtn.addEventListener("click", sendMessage);
-input.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") sendMessage();
-});
 
 function appendMessage(sender, text) {
     const msg = document.createElement("div");
@@ -23,23 +16,13 @@ function appendMessage(sender, text) {
 function sendMessage() {
     const text = input.value.trim();
     if (!text) return;
-
     appendMessage("user", text);
     input.value = "";
-
     appendMessage("bot", "💭 Думаю...");
 
-    // === Отправляем сообщение в бота ===
+    // Отправка данных в бота
     tg.sendData(JSON.stringify({ message: text }));
 }
 
-// === Получение ответа от бота ===
-window.addEventListener("message", (event) => {
-    const data = event.data;
-    if (data && data.type === "bot_response") {
-        const lastBotMsg = document.querySelector(".bot-message:last-child");
-        if (lastBotMsg) lastBotMsg.remove();
-        appendMessage("bot", data.text);
-    }
-});
-
+sendBtn.addEventListener("click", sendMessage);
+input.addEventListener("keypress", e => { if(e.key === "Enter") sendMessage(); });
