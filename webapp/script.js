@@ -1,24 +1,45 @@
+// === Инициализация Telegram WebApp ===
 const tg = window.Telegram.WebApp;
 tg.expand();
 
 const chat = document.getElementById("chat");
-const input = document.getElementById("message");
+const input = document.getElementById("userInput");
 const sendBtn = document.getElementById("sendBtn");
 
-// При нажатии кнопки — отправляем сообщение в бота
-sendBtn.addEventListener("click", () => {
-  const text = input.value.trim();
-  if (!text) return;
-
-  appendMessage("user", text);
-  tg.sendData(JSON.stringify({ message: text })); // ← отправляем боту
-  input.value = "";
+// === Отправка сообщения ===
+sendBtn.addEventListener("click", sendMessage);
+input.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") sendMessage();
 });
 
-function appendMessage(role, text) {
-  const msg = document.createElement("div");
-  msg.classList.add("message", role);
-  msg.innerText = text;
-  chat.appendChild(msg);
-  chat.scrollTop = chat.scrollHeight;
+function appendMessage(sender, text) {
+    const msg = document.createElement("div");
+    msg.className = sender === "user" ? "user-message" : "bot-message";
+    msg.innerHTML = `<p>${text}</p>`;
+    chat.appendChild(msg);
+    chat.scrollTop = chat.scrollHeight;
 }
+
+function sendMessage() {
+    const text = input.value.trim();
+    if (!text) return;
+
+    appendMessage("user", text);
+    input.value = "";
+
+    appendMessage("bot", "💭 Думаю...");
+
+    // === Отправляем сообщение в бота ===
+    tg.sendData(JSON.stringify({ message: text }));
+}
+
+// === Получение ответа от бота ===
+window.addEventListener("message", (event) => {
+    const data = event.data;
+    if (data && data.type === "bot_response") {
+        const lastBotMsg = document.querySelector(".bot-message:last-child");
+        if (lastBotMsg) lastBotMsg.remove();
+        appendMessage("bot", data.text);
+    }
+});
+
